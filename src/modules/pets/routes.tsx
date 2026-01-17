@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import PetsList from "./pages/PetsList";
-import PetDetail from "./pages/PetDetail";
+import PetsList from "@/modules/pets/pages/PetsList";
+import PetDetail from "@/modules/pets/pages/PetDetail";
+
 
 export default function PetsRoutes() {
   return (
