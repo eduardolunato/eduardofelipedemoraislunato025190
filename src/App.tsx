@@ -1,12 +1,16 @@
 import { login } from './api/auth.service';
+import { saveTokens } from './utils/auth';
 
 function App() {
   const handleLogin = async () => {
     try {
       const data = await login('admin', 'admin');
-      console.log(data);
+
+      saveTokens(data.access_token, data.refresh_token);
+
+      console.log('Tokens salvos com sucesso');
     } catch (error) {
-      console.error(error);
+      console.error('Erro no login', error);
     }
   };
 
