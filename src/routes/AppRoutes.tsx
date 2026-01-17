@@ -1,20 +1,28 @@
-import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-const PetsRoutes = lazy(() => import("../modules/pets/routes"));
-const TutoresRoutes = lazy(() => import("../modules/tutores/routes"));
+import RequireAuth from "./RequireAuth";
+import Login from "@/pages/Login";
+
+import PetsRoutes from "@/modules/pets/routes";
+import TutoresRoutes from "@/modules/tutores/routes";
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<div className="p-6">Carregando...</div>}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/pets" replace />} />
+    <Routes>
+      {/* inicial */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
+      {/* pública */}
+      <Route path="/login" element={<Login />} />
+
+      {/* protegidas */}
+      <Route element={<RequireAuth />}>
         <Route path="/pets/*" element={<PetsRoutes />} />
         <Route path="/tutores/*" element={<TutoresRoutes />} />
+      </Route>
 
-        <Route path="*" element={<div className="p-6">Página não encontrada</div>} />
-      </Routes>
-    </Suspense>
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }

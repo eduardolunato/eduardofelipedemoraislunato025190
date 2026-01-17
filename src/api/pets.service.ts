@@ -1,8 +1,18 @@
 import { api } from "./axios";
-import type { PetRequestDto, PetResponseDto } from "../modules/pets/types";
+import type { PagedResponse, PetResponseDto } from "@/modules/pets/types";
 
-export async function createPet(payload: PetRequestDto): Promise<PetResponseDto> {
-  const response = await api.post<PetResponseDto>("/v1/pets", payload);
-  return response.data;
+export async function listPets(params: {
+  page?: number;
+  size?: number;
+  nome?: string;
+}) {
+  const { data } = await api.get<PagedResponse<PetResponseDto>>("/v1/pets", {
+    params: {
+      page: params.page ?? 0,
+      size: params.size ?? 10,
+      nome: params.nome?.trim() || undefined,
+    },
+  });
+
+  return data;
 }
-

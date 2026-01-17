@@ -1,14 +1,8 @@
-export type AnexoResponseDto = {
+export type PetFotoDto = {
   id: number;
   nome: string;
   contentType: string;
   url: string;
-};
-
-export type PetRequestDto = {
-  nome: string; // <= 100 chars
-  raca: string; // <= 100 chars
-  idade: number; // int32
 };
 
 export type PetResponseDto = {
@@ -16,5 +10,13 @@ export type PetResponseDto = {
   nome: string;
   raca: string;
   idade: number;
-  foto?: AnexoResponseDto;
+  foto?: PetFotoDto | null;
+};
+
+export type PagedResponse<T> = {
+  page: number;
+  size: number;
+  total: number;
+  pageCount: number;
+  content: T[];
 };
