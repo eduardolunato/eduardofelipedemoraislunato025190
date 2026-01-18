@@ -13,10 +13,17 @@ export type PetResponseDto = {
   foto?: PetFotoDto | null;
 };
 
+export type PetRequestDto = {
+  nome: string;
+  raca: string;
+  idade: number;
+};
+
 export type PagedResponse<T> = {
   page: number;
   size: number;
   total: number;
   pageCount: number;
   content: T[];
+  
 };

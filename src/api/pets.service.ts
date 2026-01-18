@@ -1,5 +1,5 @@
 import { api } from "./axios";
-import type { PagedResponse, PetResponseDto } from "@/modules/pets/types";
+import type { PagedResponse, PetRequestDto, PetResponseDto } from "@/modules/pets/types";
 
 export async function listPets(params: {
   page?: number;
@@ -14,5 +14,10 @@ export async function listPets(params: {
     },
   });
 
+  return data;
+}
+
+export async function createPet(payload: PetRequestDto) {
+  const { data } = await api.post<PetResponseDto>("/v1/pets", payload);
   return data;
 }

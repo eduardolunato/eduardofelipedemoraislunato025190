@@ -1,27 +1,48 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
-import RequireAuth from "./RequireAuth";
+import RequireAuth from "@/routes/RequireAuth";
+
+import AppLayout from "@/components/AppLayout";
 import Login from "@/pages/Login";
 
-import PetsRoutes from "@/modules/pets/routes";
-import TutoresRoutes from "@/modules/tutores/routes";
+const PetsRoutes = lazy(() => import("@/modules/pets/routes"));
+const TutoresRoutes = lazy(() => import("@/modules/tutores/routes"));
+
+function Loading() {
+  return <div className="p-6 text-gray-700">Carregando...</div>;
+}
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* inicial */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* pública */}
+      {/* Pública */}
       <Route path="/login" element={<Login />} />
 
-      {/* protegidas */}
+      {/* Protegidas + Layout */}
       <Route element={<RequireAuth />}>
-        <Route path="/pets/*" element={<PetsRoutes />} />
-        <Route path="/tutores/*" element={<TutoresRoutes />} />
+        <Route element={<AppLayout />}>
+          <Route
+            path="/pets/*"
+            element={
+              <Suspense fallback={<Loading />}>
+                <PetsRoutes />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/tutores/*"
+            element={
+              <Suspense fallback={<Loading />}>
+                <TutoresRoutes />
+              </Suspense>
+            }
+          />
+        </Route>
       </Route>
 
-      {/* fallback */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

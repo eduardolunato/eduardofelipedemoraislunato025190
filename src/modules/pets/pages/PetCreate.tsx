@@ -1,17 +1,11 @@
 import { useState, type FormEvent } from "react";
-import axios, { type AxiosError } from "axios";
+import { createPet } from "@/api/pets.service";
+import type { PetRequestDto } from "@/modules/pets/types";
+import axios from "axios";
 
-import { createPet } from "../../../api/pets.service";
-import type { PetRequestDto } from "../types";
-import { getAccessToken } from "../../../utils/auth";
-
-type ApiErrorPayload = {
-  message?: string;
-  error?: string;
-};
+type ApiErrorPayload = { message?: string; error?: string };
 
 export default function PetCreate() {
-  // ✅ HOOKS primeiro (sempre)
   const [form, setForm] = useState<PetRequestDto>({
     nome: "",
     raca: "",
@@ -22,22 +16,6 @@ export default function PetCreate() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const isLogged = !!getAccessToken();
-
-  // ✅ retorno condicional SÓ depois dos hooks
-  if (!isLogged) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="mx-auto max-w-xl rounded-xl bg-white p-6 shadow">
-          <h1 className="text-2xl font-bold mb-2">Cadastrar Pet</h1>
-          <p className="text-red-700">
-            Você precisa fazer login antes de cadastrar um pet.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   function update<K extends keyof PetRequestDto>(key: K, value: PetRequestDto[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -47,9 +25,7 @@ export default function PetCreate() {
     if (form.nome.length > 100) return "Nome deve ter no máximo 100 caracteres.";
     if (!form.raca.trim()) return "Informe a raça.";
     if (form.raca.length > 100) return "Raça deve ter no máximo 100 caracteres.";
-    if (!Number.isInteger(form.idade) || form.idade < 0) {
-      return "Idade deve ser um inteiro >= 0.";
-    }
+    if (!Number.isInteger(form.idade) || form.idade < 0) return "Idade deve ser um inteiro >= 0.";
     return null;
   }
 
@@ -59,30 +35,21 @@ export default function PetCreate() {
     setError(null);
 
     const v = validate();
-    if (v) {
-      setError(v);
-      return;
-    }
+    if (v) return setError(v);
 
     try {
       setLoading(true);
-
       const created = await createPet(form);
-
       setSuccess(`Pet cadastrado com sucesso! (ID: ${created.id})`);
       setForm({ nome: "", raca: "", idade: 0 });
     } catch (err: unknown) {
-      let apiMsg = "Erro ao cadastrar pet. Veja o console.";
+      let msg = "Erro ao cadastrar pet.";
 
-      if (axios.isAxiosError(err)) {
-        const axErr = err as AxiosError<ApiErrorPayload>;
-        apiMsg =
-          axErr.response?.data?.message ||
-          axErr.response?.data?.error ||
-          apiMsg;
+      if (axios.isAxiosError<ApiErrorPayload>(err)) {
+        msg = err.response?.data?.message || err.response?.data?.error || msg;
       }
 
-      setError(apiMsg);
+      setError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -92,23 +59,14 @@ export default function PetCreate() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-xl rounded-xl bg-white p-6 shadow">
-        <h1 className="text-2xl font-bold mb-4">Cadastrar Pet</h1>
+        <h1 className="mb-4 text-2xl font-bold">Cadastrar Pet</h1>
 
-        {success && (
-          <div className="mb-4 rounded bg-green-50 p-3 text-green-700">
-            {success}
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-4 rounded bg-red-50 p-3 text-red-700">
-            {error}
-          </div>
-        )}
+        {success && <div className="mb-4 rounded bg-green-50 p-3 text-green-700">{success}</div>}
+        {error && <div className="mb-4 rounded bg-red-50 p-3 text-red-700">{error}</div>}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Nome</label>
+            <label className="mb-1 block text-sm font-medium">Nome</label>
             <input
               className="w-full rounded border p-2"
               value={form.nome}
@@ -119,7 +77,7 @@ export default function PetCreate() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Raça</label>
+            <label className="mb-1 block text-sm font-medium">Raça</label>
             <input
               className="w-full rounded border p-2"
               value={form.raca}
@@ -130,7 +88,7 @@ export default function PetCreate() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Idade</label>
+            <label className="mb-1 block text-sm font-medium">Idade</label>
             <input
               className="w-full rounded border p-2"
               type="number"
