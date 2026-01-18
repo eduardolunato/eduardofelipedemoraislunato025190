@@ -27,3 +27,8 @@ export async function getPetById(id: number) {
   const { data } = await api.get(`/v1/pets/${id}`);
   return data as unknown;
 }
+
+export async function updatePet(id: number, payload: PetRequestDto) {
+  const { data } = await api.put<PetResponseDto>(`/v1/pets/${id}`, payload);
+  return data;
+}
