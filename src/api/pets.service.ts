@@ -21,3 +21,9 @@ export async function createPet(payload: PetRequestDto) {
   const { data } = await api.post<PetResponseDto>("/v1/pets", payload);
   return data;
 }
+
+/** GET /v1/pets/{id} */
+export async function getPetById(id: number) {
+  const { data } = await api.get(`/v1/pets/${id}`);
+  return data as unknown;
+}
