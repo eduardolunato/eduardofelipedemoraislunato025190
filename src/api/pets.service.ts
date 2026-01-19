@@ -82,3 +82,8 @@ export async function addPetFoto(id: number, file: File) {
 export async function removePetFoto(id: number, fotoId: number) {
   await api.delete(`/v1/pets/${id}/fotos/${fotoId}`);
 }
+
+/** DELETE /v1/pets/{id} */
+export async function deletePet(id: number) {
+  await api.delete(`/v1/pets/${id}`);
+}

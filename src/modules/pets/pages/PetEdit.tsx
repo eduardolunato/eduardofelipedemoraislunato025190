@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Upload, UserPlus, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Trash2,
+  Upload,
+  UserPlus,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 
 import {
   getPetByIdCompleto,
   updatePet,
   addPetFoto,
   removePetFoto,
+  deletePet,
   type PetResponseCompletoDto,
   type TutorMiniDto,
 } from "@/api/pets.service";
@@ -76,29 +85,28 @@ export default function PetEdit() {
   }
 
   async function onPickFoto(file: File | null) {
-  if (!file) return;
-  setError(null);
-  setSuccess(null);
+    if (!file) return;
+    setError(null);
+    setSuccess(null);
 
-  try {
-    setFotoUploading(true);
+    try {
+      setFotoUploading(true);
 
-    // ✅ se já existe foto, remove antes para "trocar" de verdade
-    if (pet?.foto?.id) {
-      await removePetFoto(petId, pet.foto.id);
+      // se já existe foto, remove antes para "trocar" de verdade
+      if (pet?.foto?.id) {
+        await removePetFoto(petId, pet.foto.id);
+      }
+
+      await addPetFoto(petId, file);
+      await refreshPet();
+      setSuccess("Foto atualizada com sucesso!");
+    } catch (e) {
+      setError("Não foi possível enviar a foto.");
+      console.error(e);
+    } finally {
+      setFotoUploading(false);
     }
-
-    await addPetFoto(petId, file);
-    await refreshPet();
-    setSuccess("Foto atualizada com sucesso!");
-  } catch (e) {
-    setError("Não foi possível enviar a foto.");
-    console.error(e);
-  } finally {
-    setFotoUploading(false);
   }
-}
-
 
   async function onRemoveFoto() {
     if (!pet?.foto?.id) return;
@@ -131,55 +139,52 @@ export default function PetEdit() {
   );
 
   useEffect(() => {
-  let alive = true;
+    let alive = true;
 
-  async function loadSugestoes() {
-    const q = debouncedTutorQuery.trim();
-    
+    async function loadSugestoes() {
+      const q = debouncedTutorQuery.trim();
 
-    if (!q) {
-      setTutoresSugestoes([]);
-      return;
+      if (!q) {
+        setTutoresSugestoes([]);
+        return;
+      }
+
+      try {
+        setTutoresLoading(true);
+
+        // Busca no backend (mesmo que ignore filtro) e filtra no front
+        const data = await listTutores({
+          page: 0,
+          size: 50,
+          nome: q,
+        });
+
+        if (!alive) return;
+
+        const raw = data.content ?? [];
+        const lower = q.toLowerCase();
+
+        const filtered = raw.filter((t) => {
+          const nome = (t.nome ?? "").toLowerCase();
+          const id = String(t.id ?? "");
+          return nome.includes(lower) || id.includes(lower);
+        });
+
+        setTutoresSugestoes(filtered.slice(0, PAGE_SIZE_TUTORES));
+      } catch (e) {
+        if (!alive) return;
+        console.error(e);
+        setTutoresSugestoes([]);
+      } finally {
+        if (alive) setTutoresLoading(false);
+      }
     }
 
-    try {
-      setTutoresLoading(true);
-
-      // Busca no backend (mesmo que ele ignore filtro)
-      const data = await listTutores({
-        page: 0,
-        size: 50, // pega mais para filtrar no front
-        nome: q,   // mantém, caso o backend filtre
-      });
-
-      if (!alive) return;
-
-      const raw = data.content ?? [];
-      const lower = q.toLowerCase();
-
-      // ✅ filtro sempre no front (nome OU id)
-      const filtered = raw.filter((t) => {
-        const nome = (t.nome ?? "").toLowerCase();
-        const id = String(t.id ?? "");
-        return nome.includes(lower) || id.includes(lower);
-      });
-
-      // ✅ limita para não poluir
-      setTutoresSugestoes(filtered.slice(0, PAGE_SIZE_TUTORES));
-    } catch (e) {
-      if (!alive) return;
-      console.error(e);
-      setTutoresSugestoes([]);
-    } finally {
-      if (alive) setTutoresLoading(false);
-    }
-  }
-
-  loadSugestoes();
-  return () => {
-    alive = false;
-  };
-}, [debouncedTutorQuery]);
+    loadSugestoes();
+    return () => {
+      alive = false;
+    };
+  }, [debouncedTutorQuery]);
 
   const currentTutores: TutorMiniDto[] = pet?.tutores ?? [];
 
@@ -189,15 +194,8 @@ export default function PetEdit() {
 
     // aceita: selecionar da lista; ou digitar um ID
     const typed = tutorQuery.trim();
-
-    // 1) se vier "qualquer coisa #123", captura o 123
-    const hashMatch = typed.match(/#\s*(\d+)\s*$/);
-    const hashId = hashMatch ? Number.parseInt(hashMatch[1], 10) : null;
-
-    // 2) se vier só número
-    const pureId = /^\d+$/.test(typed) ? Number.parseInt(typed, 10) : null;
-
-    const typedId = hashId ?? pureId;
+    const typedId =
+      typed && /^\d+$/.test(typed) ? Number.parseInt(typed, 10) : null;
 
     const tutorId = selectedTutor?.id ?? typedId;
 
@@ -233,6 +231,28 @@ export default function PetEdit() {
     }
   }
 
+  // ---------- DELETE PET (MODAL) ----------
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function confirmDelete() {
+    setError(null);
+    setSuccess(null);
+
+    try {
+      setDeleting(true);
+      await deletePet(petId);
+      // volta para listagem
+      navigate("/pets", { replace: true });
+    } catch (e) {
+      setError("Não foi possível excluir o pet.");
+      console.error(e);
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  }
+
   // ---------- LOAD INICIAL ----------
   useEffect(() => {
     let alive = true;
@@ -254,7 +274,6 @@ export default function PetEdit() {
 
         setPet(data);
 
-        // Preenche form
         const nome = toString((data as unknown as Record<string, unknown>).nome);
         const raca = toString((data as unknown as Record<string, unknown>).raca);
         const idade = toNumber((data as unknown as Record<string, unknown>).idade);
@@ -355,8 +374,20 @@ export default function PetEdit() {
           Voltar
         </Link>
 
-        <div className="text-sm text-gray-600">
-          Editando ID: <span className="font-medium">{petId}</span>
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-gray-600">
+            Editando ID: <span className="font-medium">{petId}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+            title="Excluir pet"
+          >
+            <Trash2 className="h-4 w-4" />
+            Excluir
+          </button>
         </div>
       </div>
 
@@ -365,7 +396,6 @@ export default function PetEdit() {
         {/* Header com foto redonda + título */}
         <div className="flex items-start gap-4">
           <div className="relative">
-            {/* Avatar */}
             {fotoUrl ? (
               <img
                 src={fotoUrl}
@@ -409,7 +439,7 @@ export default function PetEdit() {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">Editar Pet</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Atualize os dados do pet e clique em salvar. (Foto: usar o botão azul)
+              Atualize os dados do pet e clique em salvar.
             </p>
           </div>
         </div>
@@ -492,9 +522,7 @@ export default function PetEdit() {
                   <div className="font-medium text-gray-900">
                     {t.nome} <span className="text-gray-500">#{t.id}</span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {t.email ? t.email : ""}
-                  </div>
+                  <div className="text-sm text-gray-600">{t.email ? t.email : ""}</div>
                 </div>
 
                 <button
@@ -523,13 +551,12 @@ export default function PetEdit() {
                 value={tutorQuery}
                 onChange={(e) => {
                   setTutorQuery(e.target.value);
-                  setSelectedTutor(null); // ✅ se digitou, não está mais selecionado
+                  setSelectedTutor(null);
                 }}
                 placeholder="Ex.: Maria (ou 12)"
                 className="w-full rounded-lg border border-gray-300 bg-white p-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
 
-              {/* dropdown */}
               {tutorQuery.trim() && tutoresSugestoes.length > 0 && (
                 <div className="absolute z-10 mt-2 w-full rounded-lg border bg-white shadow">
                   {tutoresSugestoes.map((t) => (
@@ -538,7 +565,7 @@ export default function PetEdit() {
                       type="button"
                       onClick={() => {
                         setSelectedTutor(t);
-                        setTutorQuery(`${t.nome} #${t.id}`); // ✅ visual, mas mantém o id no selectedTutor
+                        setTutorQuery(`${t.nome} #${t.id}`);
                         setTutoresSugestoes([]);
                       }}
                       className="w-full text-left px-3 py-2 hover:bg-gray-50"
@@ -546,9 +573,7 @@ export default function PetEdit() {
                       <div className="font-medium text-gray-900">
                         {t.nome} <span className="text-gray-500">#{t.id}</span>
                       </div>
-                      <div className="text-xs text-gray-600">
-                        {t.email ?? ""}
-                      </div>
+                      <div className="text-xs text-gray-600">{t.email ?? ""}</div>
                     </button>
                   ))}
                 </div>
@@ -574,6 +599,52 @@ export default function PetEdit() {
           </p>
         </div>
       </div>
+
+      {/* MODAL DELETE */}
+      {deleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => (deleting ? null : setDeleteOpen(false))}
+          />
+          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-lg border border-gray-200">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-50 border border-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900">
+                  Confirmar exclusão
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Tem certeza que deseja excluir este pet? Essa ação não pode ser desfeita.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteOpen(false)}
+                disabled={deleting}
+                className="rounded-lg border px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4" />
+                {deleting ? "Excluindo..." : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
