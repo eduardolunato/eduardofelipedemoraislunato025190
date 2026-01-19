@@ -1,3 +1,4 @@
+import TutorCreate from "./pages/TutorCreate";
 import { Routes, Route } from "react-router-dom";
 
 function TutoresHome() {
@@ -8,6 +9,7 @@ export default function TutoresRoutes() {
   return (
     <Routes>
       <Route index element={<TutoresHome />} />
+      <Route path="novo" element={<TutorCreate />} />
     </Routes>
   );
 }
