@@ -30,3 +30,28 @@ export async function vincularPetAoTutor(tutorId: number, petId: number) {
 export async function desvincularPetDoTutor(tutorId: number, petId: number) {
   await api.delete(`/v1/tutores/${tutorId}/pets/${petId}`);
 }
+
+/** GET /v1/tutores (listar/filtrar por nome) */
+export type PagedResponse<T> = {
+  page: number;
+  size: number;
+  total: number;
+  pageCount: number;
+  content: T[];
+};
+
+export async function listTutores(params: {
+  page?: number;
+  size?: number;
+  nome?: string;
+}) {
+  const { data } = await api.get<PagedResponse<TutorResponseDto>>(`/v1/tutores`, {
+    params: {
+      page: params.page ?? 0,
+      size: params.size ?? 10,
+      nome: params.nome?.trim() || undefined,
+    },
+  });
+
+  return data;
+}
