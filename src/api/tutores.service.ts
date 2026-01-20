@@ -116,3 +116,13 @@ export async function getTutorByIdCompleto(id: number) {
   const { data } = await api.get<TutorResponseCompletoDto>(`/v1/tutores/${id}`);
   return data;
 }
+
+/** DELETE /v1/tutores/{id} */
+export async function deleteTutor(id: number) {
+  await api.delete(`/v1/tutores/${id}`);
+}
+
+/** DELETE /v1/tutores/{id}/fotos/{fotoId} */
+export async function deleteTutorFoto(id: number, fotoId: number) {
+  await api.delete(`/v1/tutores/${id}/fotos/${fotoId}`);
+}

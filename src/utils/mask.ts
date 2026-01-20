@@ -1,12 +1,11 @@
 export function maskCpf(cpf?: number | string) {
-  if (cpf === null || cpf === undefined) return "—";
+  if (cpf === undefined || cpf === null) return "—";
 
-  let digits = String(cpf).replace(/\D/g, "");
+  const raw = String(cpf).replace(/\D/g, "");
+  if (!raw) return "—";
 
-  // se veio como number, pode ter perdido zeros à esquerda → recupera
-  digits = digits.padStart(11, "0");
-
-  if (digits.length !== 11) return digits;
+  // Se veio menor por causa de leading zero, completa à esquerda
+  const digits = raw.length >= 11 ? raw.slice(0, 11) : raw.padStart(11, "0");
 
   return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
 }
