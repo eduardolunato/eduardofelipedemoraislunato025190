@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 
 import { createTutor } from "@/api/tutores.service";
+import { maskCpfInput, maskPhoneInput, onlyDigits } from "@/utils/mask";
+
 
 type TutorRequestDto = {
   nome: string;
@@ -47,7 +49,10 @@ export default function TutorCreate() {
     // telefone/endereco sem obrigatoriedade por enquanto
     // cpf: se preencheu, precisa ter 11 dígitos (validação básica)
     const cpfDigits = form.cpf.replace(/\D/g, "");
-    if (cpfDigits && cpfDigits.length !== 11) return "CPF deve ter 11 dígitos (apenas números).";
+    if (cpfDigits) {
+      if (cpfDigits.length !== 11) return "CPF deve ter 11 dígitos (apenas números).";
+      if (/^0{11}$/.test(cpfDigits)) return "CPF inválido.";
+    }
 
     return null;
   }
@@ -65,7 +70,7 @@ export default function TutorCreate() {
     const payload: TutorRequestDto = {
       nome: form.nome.trim(),
       email: form.email.trim() || undefined,
-      telefone: form.telefone.trim() || undefined,
+      telefone: onlyDigits(form.telefone) || undefined,
       endereco: form.endereco.trim() || undefined,
       cpf: clampCpf(form.cpf),
     };
@@ -142,8 +147,10 @@ export default function TutorCreate() {
               <input
                 className="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 value={form.telefone}
-                onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))}
+                onChange={(e) => 
+                  setForm((p) => ({ ...p, telefone: maskPhoneInput(e.target.value) }))}
                 placeholder="Ex.: (65) 99999-9999"
+                maxLength={15}
               />
             </div>
           </div>
@@ -168,8 +175,10 @@ export default function TutorCreate() {
               <input
                 className="mt-1 w-full rounded-lg border border-gray-300 bg-white p-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 value={form.cpf}
-                onChange={(e) => setForm((p) => ({ ...p, cpf: e.target.value }))}
-                placeholder="Somente números (11 dígitos)"
+                onChange={(e) => 
+                  setForm((p) => ({ ...p, cpf: maskCpfInput(e.target.value) }))}
+                placeholder="000.000.000-00"
+                maxLength={14}
               />
               <p className="mt-1 text-xs text-gray-500">
                 Se preencher, use 11 dígitos. (Validação simples)
