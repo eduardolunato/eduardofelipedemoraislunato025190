@@ -1,5 +1,9 @@
-import { api } from './axios';
+import axios from "axios";
 import { getRefreshToken, saveTokens, clearTokens } from "@/utils/auth";
+
+const plain = axios.create({
+  baseURL: "https://pet-manager-api.geia.vip",
+});
 
 type RefreshResponse = {
   access_token: string;
@@ -12,7 +16,7 @@ export async function refreshAccessToken() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error("Sem refresh token");
 
-  const { data } = await api.put<RefreshResponse>("/autenticacao/refresh", {
+  const { data } = await plain.put<RefreshResponse>("/autenticacao/refresh", {
     refresh_token: refreshToken,
   });
 
