@@ -16,9 +16,14 @@ export async function refreshAccessToken() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error("Sem refresh token");
 
-  const { data } = await plain.put<RefreshResponse>("/autenticacao/refresh", {
-    refresh_token: refreshToken,
-  });
+  const { data } = await plain.put<RefreshResponse>("/autenticacao/refresh", {  
+  },
+  {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`, // ← AQUI!
+      },
+    }
+  );
 
   saveTokens(data.access_token, data.refresh_token);
   return data.access_token;
