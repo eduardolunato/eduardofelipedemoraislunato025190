@@ -54,7 +54,7 @@ export default function AppLayout() {
                 <PawPrint className="h-6 w-6 text-blue-700" />
               </div>
               <div className="leading-tight">
-                <p className="text-lg font-bold text-white">Pet Manager</p>
+                <p className="text-lg font-bold text-white">MeuPet</p>
                 <p className="text-xs text-blue-100">Administração</p>
               </div>
             </div>
