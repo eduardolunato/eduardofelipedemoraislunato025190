@@ -1,73 +1,212 @@
-# React + TypeScript + Vite
+![React](https://img.shields.io/badge/React-18-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Tests](https://img.shields.io/badge/tests-33%20passed-brightgreen)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+# 🐶 Meu Pet – Frontend
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Projeto desenvolvido para o processo seletivo de 
+**Engenheiro da Computação - Sênior – Estado de Mato Grosso**.
 
-## React Compiler
+Aplicação SPA em **React + TypeScript + Vite + Tailwind**, consumindo a API pública de registro de Pets e Tutores.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Swagger dos endpoints: https://pet-manager-api.geia.vip/q/swagger-ui/
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# 👤 Dados da inscrição
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Candidato: Eduardo Felipe de Morais Lunato  
+- Vaga: Engenheiro da Computação - Sênior  
+- Projeto: MeuPet  
+- Repositório: https://github.com/eduardolunato/eduardofelipedemoraislunato025190
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 🚀 Tecnologias utilizadas
+
+- React 18
+- TypeScript
+- Vite
+- TailwindCSS
+- React Router DOM (Lazy Loading)
+- Axios
+- Vitest + Testing Library
+- Docker + Nginx
+
+---
+
+# 🏗️ Arquitetura do projeto
+
+### Estrutura de pastas
+
+```
+src
+├─ api/            # serviços HTTP (axios)
+├─ components/     # componentes reutilizáveis
+├─ hooks/          # hooks customizados
+├─ modules/
+│   ├─ pets/
+│   └─ tutores/
+├─ pages/
+├─ routes/
+├─ utils/
+├─ test/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Padrões adotados
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Separação por domínio (Pets / Tutores)
+- Services para chamadas HTTP
+- Componentização
+- Lazy loading de rotas
+- Tipagem forte com DTOs
+- Testes unitários
+- Build multi-stage Docker
+
+---
+
+# 📦 Funcionalidades implementadas
+
+## Pets
+- Listagem com paginação
+- Busca por nome
+- Detalhamento
+- Cadastro
+- Edição
+- Upload de foto
+- Vincular / desvincular tutor
+- Exclusão
+
+## Tutores
+- Listagem
+- Detalhamento
+- Cadastro
+- Edição
+- Upload de foto
+- Vincular / desvincular pets
+- Exclusão
+
+## Autenticação
+- Login
+- Refresh token
+- Interceptor Axios
+
+---
+
+# 🧪 Testes unitários
+
+Executar:
+
+```bash
+npm run test
 ```
+
+Testes criados para:
+- utils (jwt, mask)
+- Login
+- PetsList
+- PetDetail
+- PetCreate
+- PetEdit
+- TutoresList
+- TutorDetail
+- TutorCreate
+- TutorEdit
+
+Coverage
+
+```bash
+npm run test:coverage
+```
+Relatório HTML:
+```
+Abra o arquivo → coverage/index.html
+```
+
+
+# 🖥️ Rodando localmente (dev)
+
+```bash
+npm install
+npm run dev
+```
+Abrir: http://localhost:5173
+
+
+# 🐳 Rodando com Docker (produção)
+
+Build
+```bash
+docker build -t pet-manager .
+```
+Run
+```bash
+docker run -p 8080:80 pet-manager
+```
+Abrir: http://localhost:8080
+
+# 📄 Scripts disponíveis
+
+| Script                | Função         |
+| --------------------- | -------------- |
+| npm run dev           | ambiente dev   |
+| npm run build         | build produção |
+| npm run preview       | preview build  |
+| npm run test          | testes         |
+| npm run test:coverage | coverage       |
+
+# 🔍 Como avaliar rapidamente o projeto
+
+1. Rodar testes → npm run test
+2. Rodar coverage → npm run test:coverage
+3. Subir container → docker build + docker run
+4. Testar CRUD completo de Pets e Tutores
+
+# 📦 Deploy
+
+Projeto preparado para deploy em:
+
+- Docker + Nginx
+- Linux server
+- VPS / Kubernetes
+- Vercel / Netlify (build estático)
+
+```nginx
+build → gerar dist → servir com nginx
+```
+
+# ✅ Requisitos atendidos
+
+- ✔ Requisições em tempo real
+- ✔ Layout responsivo
+- ✔ Tailwind
+- ✔ Lazy Loading
+- ✔ Paginação
+- ✔ TypeScript
+- ✔ Organização por módulos
+- ✔ Testes unitários
+- ✔ Docker
+- ✔ README completo
+
+
+# ❗Priorização
+
+1. Funcionalidades principais (CRUD completo)
+2. Organização do código
+3. Tipagem forte
+4. Testes unitários
+5. Dockerização
+
+# 🎯 Conclusão
+
+Aplicação completa, escalável e pronta para produção, com testes automatizados, container Docker e arquitetura modular.
+
+Projeto desenvolvido com foco em:
+
+- Clean Code
+- Legibilidade
+- Manutenibilidade
+- Escalabilidade
